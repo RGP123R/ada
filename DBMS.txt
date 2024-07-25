@@ -1,0 +1,162 @@
+4th program 
+
+
+show databases;
+
+create database dbms;
+ 
+use dbms;
+
+create table customers1(ID int primary key Auto_Increment, Name varchar(20), Age int,Address char(20), Sal decimal (10,2));
+
+delimiter //
+create trigger after_insert_salary_difference after insert on customers1 for each row begin set @my_sal_diff=concat('salary inserted is', new.sal); 
+end //
+
+desc customers1;
+
+insert into customers1 values(1,'ABC',23,'Hubli',100.20);
+
+select @my_sal_diff;
+
+insert into customers1 values(2,'XYZ',27,'Gadag',150.10);
+
+select @my_sal_diff;
+
+delimiter //
+create trigger after_delete_sal_diff after delete on customers1 for each row begin set @my_sal_diff=concat('Salary deleted is',old.sal);
+end //
+
+delete from customers1 where ID=1;
+
+delimiter //
+create trigger after_update_sal_difference
+after update on customers1
+for each row
+begin
+declare old_sal decimal(10,2);
+declare new_sal decimal(10,2);
+set old_sal=old.sal;
+set new_sal=new.sal;
+set @my_sal_diff=concat('Salary Difference after update is', new.sal-old.sal);
+end //
+
+update customers1
+set sal=200
+where id=1;
+
+select @my_sal_diff;
+
+
+
+5th program 
+
+
+CREATE DATABASE COMP2;
+
+USE COMP2;
+
+CREATE TABLE Employee (
+E_id INT,
+E_name VARCHAR(255),
+Age INT,
+Salary DECIMAL(10, 2));
+
+INSERT INTO Employee (E_id, E_name, Age, Salary)
+VALUES  (1, 'Samarth', 30, 50000.00),
+(2, 'Ramesh Kumar', 25, 45000.00),
+(3, 'Seema Banu', 35, 62000.00),
+(4, 'Dennis Anil', 28, 52000.00),
+(5, 'Rehman Khan', 32, 58000.00);
+
+DELIMITER //
+CREATE PROCEDURE fetch_employee_data()
+BEGIN
+DECLARE emp_id INT;
+DECLARE emp_name VARCHAR(255);
+DECLARE emp_age INT;
+DECLARE emp_salary DECIMAL(10, 2);
+DECLARE emp_cursor CURSOR FOR
+SELECT E_id, E_name, Age, Salary
+FROM Employee;
+DECLARE CONTINUE HANDLER FOR NOT FOUND
+SET @finished = 1;
+OPEN emp_cursor;
+SET @finished = 0;
+cursor_loop: LOOP
+FETCH emp_cursor INTO emp_id, emp_name, emp_age, emp_salary;
+IF @finished = 1 THEN
+LEAVE cursor_loop;
+END IF;
+SELECT CONCAT('Employee ID: ', emp_id, ', Name: ', emp_name, ', Age: ', emp_age, ', Salary: ', emp_salary) AS Employee_InfO;
+END LOOP;
+CLOSE emp_cursor;
+END//
+
+CALL fetch_employee_data();
+//
+
+
+
+6th program 
+
+CREATE DATABASE ROLLCALL1;
+
+USE ROLLCALL1;
+
+CREATE TABLE N_RollCall (
+student_id INT PRIMARY KEY,
+student_name VARCHAR(255),
+birth_date DATE);
+
+CREATE TABLE O_RollCall (
+student_id INT PRIMARY KEY,
+student_name VARCHAR(255),
+birth_date DATE);
+
+INSERT INTO O_RollCall (student_id, student_name, birth_date)
+VALUES
+(1, 'Shivanna', '1995-08-15'),
+(3, 'Cheluva', '1990-12-10');
+
+INSERT INTO N_RollCall (student_id, student_name, birth_date)
+VALUES(1, 'Shivanna', '1995-08-15'),  -- Common record with O_RollCall
+(2, 'Bhadramma', '1998-03-22'),
+(3, 'Cheluva', '1990-12-10'), -- Common record with O_RollCall
+(4, 'Devendra', '2000-05-18'),
+(5, 'Eshwar', '1997-09-03');
+
+DELIMITER //
+CREATE PROCEDURE merge_rollcall_data()
+BEGIN
+DECLARE done INT DEFAULT FALSE;
+DECLARE n_id INT;
+DECLARE n_name VARCHAR(255);
+DECLARE n_birth_date DATE;
+DECLARE n_cursor CURSOR FOR
+SELECT student_id, student_name, birth_date
+FROM N_RollCall;
+DECLARE CONTINUE HANDLER FOR NOT FOUND
+SET done = TRUE;
+OPEN n_cursor;
+cursor_loop: LOOP
+FETCH n_cursor INTO n_id, n_name, n_birth_date;
+IF done THEN
+LEAVE cursor_loop;
+END IF;
+IF NOT EXISTS (SELECT 1 FROM O_RollCall WHERE student_id = n_id) THEN
+INSERT INTO O_RollCall (student_id, student_name, birth_date) VALUES (n_id, n_name, n_birth_date);
+END IF;
+END LOOP;
+CLOSE n_cursor;
+END//
+
+CALL merge_rollcall_data();
+//
+
+SELECT * FROM O_RollCall;
+//
+
+
+
+
