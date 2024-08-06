@@ -1,0 +1,64 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define MAX 10000  // Define the maximum size for the array
+
+int a[MAX]; // Declare the array globally
+
+// Function to perform the partition operation for Quick Sort
+int partition(int lb, int ub) {
+    int up, down, key, temp;
+    down = lb;
+    up = ub;
+    key = a[lb];
+
+    while (down < up) {
+        while (key >= a[down] && down < ub)
+            down++;
+        while (key < a[up] && up > lb)
+            up--;
+        if (down < up) {
+            temp = a[down];
+            a[down] = a[up];
+            a[up] = temp;
+        }
+    }
+
+    a[lb] = a[up];
+    a[up] = key;
+    return up;
+}
+
+// Function to perform Quick Sort
+void quicksort(int low, int high) {
+    int pos;
+    if (low < high) {
+        pos = partition(low, high);
+        quicksort(low, pos - 1);
+        quicksort(pos + 1, high);
+    }
+}
+
+int main() {
+    int i, n;
+    clock_t start, end;
+
+    printf("Quicksort: N, Time taken\n");
+    printf("--------\n");
+
+    srand(time(0)); // Seed the random number generator
+
+    for (n = 5000; n <= 10000; n += 500) { // Corrected increment operator
+        for (i = 0; i < n; i++)
+            a[i] = rand() % n;
+
+        start = clock();
+        quicksort(0, n - 1);
+        end = clock();
+
+        printf("%4d, %f\n", n, (double)(end - start) / CLOCKS_PER_SEC); // Corrected time calculation
+    }
+
+    return 0;
+}
